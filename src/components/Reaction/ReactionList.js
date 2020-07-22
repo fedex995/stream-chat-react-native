@@ -2,17 +2,18 @@ import React from 'react';
 import { Text } from 'react-native';
 import styled from '@stream-io/styled-components';
 import PropTypes from 'prop-types';
-import { themed } from '../styles/theme';
-import { renderReactions } from '../utils/renderReactions';
-import { emojiData } from '../utils';
 
-import leftTail from '../images/reactionlist/left-tail.png';
-import leftCenter from '../images/reactionlist/left-center.png';
-import leftEnd from '../images/reactionlist/left-end.png';
+import { themed } from '../../styles/theme';
+import { renderReactions } from '../../utils/renderReactions';
+import { emojiData } from '../../utils';
 
-import rightTail from '../images/reactionlist/right-tail.png';
-import rightCenter from '../images/reactionlist/right-center.png';
-import rightEnd from '../images/reactionlist/right-end.png';
+import leftTail from '../../images/reactionlist/left-tail.png';
+import leftCenter from '../../images/reactionlist/left-center.png';
+import leftEnd from '../../images/reactionlist/left-end.png';
+
+import rightTail from '../../images/reactionlist/right-tail.png';
+import rightCenter from '../../images/reactionlist/right-center.png';
+import rightEnd from '../../images/reactionlist/right-end.png';
 
 const TouchableWrapper = styled.View`
   position: relative;
@@ -91,85 +92,85 @@ const Reactions = styled.View`
  * @extends PureComponent
  */
 
-export const ReactionList = themed(
-  class ReactionList extends React.PureComponent {
-    static themePath = 'message.reactionList';
+class ReactionList extends React.PureComponent {
+  static themePath = 'message.reactionList';
 
-    constructor(props) {
-      super(props);
-    }
+  constructor(props) {
+    super(props);
+  }
 
-    static propTypes = {
-      latestReactions: PropTypes.array,
-      openReactionSelector: PropTypes.func,
-      getTotalReactionCount: PropTypes.func,
-      visible: PropTypes.bool,
-      position: PropTypes.string,
-      /**
-       * e.g.,
-       * [
-       *  {
-       *    id: 'like',
-       *    icon: '👍',
-       *  },
-       *  {
-       *    id: 'love',
-       *    icon: '❤️️',
-       *  },
-       *  {
-       *    id: 'haha',
-       *    icon: '😂',
-       *  },
-       *  {
-       *    id: 'wow',
-       *    icon: '😮',
-       *  },
-       * ]
-       */
-      supportedReactions: PropTypes.array,
-    };
+  static propTypes = {
+    latestReactions: PropTypes.array,
+    openReactionSelector: PropTypes.func,
+    getTotalReactionCount: PropTypes.func,
+    visible: PropTypes.bool,
+    position: PropTypes.string,
+    /**
+     * e.g.,
+     * [
+     *  {
+     *    id: 'like',
+     *    icon: '👍',
+     *  },
+     *  {
+     *    id: 'love',
+     *    icon: '❤️️',
+     *  },
+     *  {
+     *    id: 'haha',
+     *    icon: '😂',
+     *  },
+     *  {
+     *    id: 'wow',
+     *    icon: '😮',
+     *  },
+     * ]
+     */
+    supportedReactions: PropTypes.array,
+  };
 
-    static defaultProps = {
-      supportedReactions: emojiData,
-    };
+  static defaultProps = {
+    supportedReactions: emojiData,
+  };
 
-    render() {
-      const {
-        latestReactions,
-        getTotalReactionCount,
-        visible,
-        alignment,
-        supportedReactions,
-      } = this.props;
-      return (
-        <TouchableWrapper alignment={alignment} activeOpacity={1}>
-          <Container visible={visible}>
-            <Reactions>
-              {renderReactions(latestReactions, supportedReactions)}
-            </Reactions>
-            <ReactionCount
-              reactionCounts={getTotalReactionCount(supportedReactions)}
-            >
-              {getTotalReactionCount(supportedReactions)}
-            </ReactionCount>
-          </Container>
-          <ImageWrapper visible={visible}>
-            {alignment === 'left' ? (
-              <React.Fragment>
-                <LeftTail source={leftTail} />
-                <LeftCenter source={leftCenter} resizeMode="stretch" />
-                <LeftEnd source={leftEnd} />
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <RightEnd source={rightEnd} />
-                <RightCenter source={rightCenter} resizeMode="stretch" />
-                <RightTail source={rightTail} />
-              </React.Fragment>
-            )}
-          </ImageWrapper>
-        </TouchableWrapper>
-      );
-    }
-  },
-);
+  render() {
+    const {
+      latestReactions,
+      getTotalReactionCount,
+      visible,
+      alignment,
+      supportedReactions,
+    } = this.props;
+    return (
+      <TouchableWrapper alignment={alignment} activeOpacity={1}>
+        <Container visible={visible}>
+          <Reactions>
+            {renderReactions(latestReactions, supportedReactions)}
+          </Reactions>
+          <ReactionCount
+            reactionCounts={getTotalReactionCount(supportedReactions)}
+          >
+            {getTotalReactionCount(supportedReactions)}
+          </ReactionCount>
+        </Container>
+        <ImageWrapper visible={visible}>
+          {alignment === 'left' ? (
+            <React.Fragment>
+              <LeftTail source={leftTail} />
+              <LeftCenter source={leftCenter} resizeMode="stretch" />
+              <LeftEnd source={leftEnd} />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <RightEnd source={rightEnd} />
+              <RightCenter source={rightCenter} resizeMode="stretch" />
+              <RightTail source={rightTail} />
+            </React.Fragment>
+          )}
+        </ImageWrapper>
+      </TouchableWrapper>
+    );
+  }
+}
+
+export default themed(ReactionList);

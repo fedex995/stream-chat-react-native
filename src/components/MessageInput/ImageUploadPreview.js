@@ -1,12 +1,13 @@
 import React from 'react';
 import { FlatList } from 'react-native';
-import { UploadProgressIndicator } from './UploadProgressIndicator';
 import PropTypes from 'prop-types';
-import { FileState, ProgressIndicatorTypes } from '../utils';
 import styled from '@stream-io/styled-components';
-import { themed } from '../styles/theme';
 
-import closeRound from '../images/icons/close-round.png';
+import UploadProgressIndicator from './UploadProgressIndicator';
+import { FileState, ProgressIndicatorTypes } from '../../utils';
+import { themed } from '../../styles/theme';
+
+import closeRound from '../../images/icons/close-round.png';
 
 const Container = styled.View`
   height: 70;
@@ -57,93 +58,93 @@ const DismissImage = styled.Image`
  * @example ./docs/ImageUploadPreview.md
  * @extends PureComponent
  */
-export const ImageUploadPreview = themed(
-  class ImageUploadPreview extends React.PureComponent {
-    static themePath = 'messageInput.imageUploadPreview';
-    constructor(props) {
-      super(props);
-    }
-    static propTypes = {
-      /**
-       * Its an object/map of id vs image objects which are set for upload. It has following structure:
-       *
-       * ```json
-       *  {
-       *    "randomly_generated_temp_id_1": {
-       *        "id": "randomly_generated_temp_id_1",
-       *        "file": // File object
-       *        "status": "Uploading" // or "Finished"
-       *      },
-       *    "randomly_generated_temp_id_2": {
-       *        "id": "randomly_generated_temp_id_2",
-       *        "file": // File object
-       *        "status": "Uploading" // or "Finished"
-       *      },
-       *  }
-       * ```
-       *
-       * */
-      imageUploads: PropTypes.array.isRequired,
-      /**
-       * @param id Index of image in `imageUploads` array in state of MessageInput.
-       */
-      removeImage: PropTypes.func,
-      /**
-       * @param id Index of image in `imageUploads` array in state of MessageInput.
-       */
-      retryUpload: PropTypes.func,
-    };
+class ImageUploadPreview extends React.PureComponent {
+  static themePath = 'messageInput.imageUploadPreview';
+  constructor(props) {
+    super(props);
+  }
+  static propTypes = {
+    /**
+     * Its an object/map of id vs image objects which are set for upload. It has following structure:
+     *
+     * ```json
+     *  {
+     *    "randomly_generated_temp_id_1": {
+     *        "id": "randomly_generated_temp_id_1",
+     *        "file": // File object
+     *        "status": "Uploading" // or "Finished"
+     *      },
+     *    "randomly_generated_temp_id_2": {
+     *        "id": "randomly_generated_temp_id_2",
+     *        "file": // File object
+     *        "status": "Uploading" // or "Finished"
+     *      },
+     *  }
+     * ```
+     *
+     * */
+    imageUploads: PropTypes.array.isRequired,
+    /**
+     * @param id Index of image in `imageUploads` array in state of MessageInput.
+     */
+    removeImage: PropTypes.func,
+    /**
+     * @param id Index of image in `imageUploads` array in state of MessageInput.
+     */
+    retryUpload: PropTypes.func,
+  };
 
-    _renderItem = ({ item }) => {
-      let type;
+  _renderItem = ({ item }) => {
+    let type;
 
-      const { retryUpload } = this.props;
+    const { retryUpload } = this.props;
 
-      if (item.state === FileState.UPLOADING)
-        type = ProgressIndicatorTypes.IN_PROGRESS;
+    if (item.state === FileState.UPLOADING)
+      type = ProgressIndicatorTypes.IN_PROGRESS;
 
-      if (item.state === FileState.UPLOAD_FAILED)
-        type = ProgressIndicatorTypes.RETRY;
-      return (
-        <React.Fragment>
-          <ItemContainer>
-            <UploadProgressIndicator
-              active={item.state !== FileState.UPLOADED}
-              type={type}
-              action={retryUpload && retryUpload.bind(this, item.id)}
-            >
-              <Upload
-                resizeMode="cover"
-                source={{ uri: item.url || item.file.uri }}
-              />
-            </UploadProgressIndicator>
-            <Dismiss
-              onPress={() => {
-                this.props.removeImage(item.id);
-              }}
-            >
-              <DismissImage source={closeRound} />
-            </Dismiss>
-          </ItemContainer>
-        </React.Fragment>
-      );
-    };
+    if (item.state === FileState.UPLOAD_FAILED)
+      type = ProgressIndicatorTypes.RETRY;
+    return (
+      <React.Fragment>
+        <ItemContainer>
+          <UploadProgressIndicator
+            active={item.state !== FileState.UPLOADED}
+            type={type}
+            action={retryUpload && retryUpload.bind(this, item.id)}
+          >
+            <Upload
+              resizeMode="cover"
+              source={{ uri: item.url || item.file.uri }}
+            />
+          </UploadProgressIndicator>
+          <Dismiss
+            onPress={() => {
+              this.props.removeImage(item.id);
+            }}
+          >
+            <DismissImage source={closeRound} />
+          </Dismiss>
+        </ItemContainer>
+      </React.Fragment>
+    );
+  };
 
-    render() {
-      if (!this.props.imageUploads || this.props.imageUploads.length === 0)
-        return null;
+  render() {
+    if (!this.props.imageUploads || this.props.imageUploads.length === 0)
+      return null;
 
-      return (
-        <Container>
-          <FlatList
-            horizontal
-            style={{ flex: 1 }}
-            data={this.props.imageUploads}
-            keyExtractor={(item) => item.id}
-            renderItem={this._renderItem}
-          />
-        </Container>
-      );
-    }
-  },
-);
+    return (
+      <Container>
+        <FlatList
+          horizontal
+          style={{ flex: 1 }}
+          data={this.props.imageUploads}
+          keyExtractor={(item) => item.id}
+          renderItem={this._renderItem}
+        />
+      </Container>
+    );
+  }
+}
+
+export default themed(ImageUploadPreview);

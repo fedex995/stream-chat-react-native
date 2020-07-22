@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
-import iconReload from '../images/reload1.png';
 import PropTypes from 'prop-types';
 import styled from '@stream-io/styled-components';
-import { ProgressIndicatorTypes } from '../utils';
-import { themed } from '../styles/theme';
+
+import iconReload from '../../images/reload1.png';
+import { ProgressIndicatorTypes } from '../../utils';
+import { themed } from '../../styles/theme';
 
 const Overlay = styled.View`
   position: absolute;
@@ -29,54 +30,54 @@ const Container = styled.View`
   ${({ theme }) => theme.messageInput.uploadProgressIndicator.container.css};
 `;
 
-export const UploadProgressIndicator = themed(
-  class UploadProgressIndicator extends React.PureComponent {
-    static themePath = 'messageInput.uploadProgressIndicator';
-    constructor(props) {
-      super(props);
+class UploadProgressIndicator extends React.PureComponent {
+  static themePath = 'messageInput.uploadProgressIndicator';
+  constructor(props) {
+    super(props);
+  }
+
+  static propTypes = {
+    active: PropTypes.bool,
+    type: PropTypes.oneOf([
+      ProgressIndicatorTypes.IN_PROGRESS,
+      ProgressIndicatorTypes.RETRY,
+    ]),
+    action: PropTypes.func,
+  };
+
+  render() {
+    const { active, children, type } = this.props;
+    if (!active) {
+      return <View>{children}</View>;
     }
 
-    static propTypes = {
-      active: PropTypes.bool,
-      type: PropTypes.oneOf([
-        ProgressIndicatorTypes.IN_PROGRESS,
-        ProgressIndicatorTypes.RETRY,
-      ]),
-      action: PropTypes.func,
-    };
+    return (
+      <TouchableOpacity onPress={this.props.action}>
+        {children}
+        <Overlay />
+        <Container>
+          {type === ProgressIndicatorTypes.IN_PROGRESS && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <ActivityIndicator style={{}} color="white" />
+            </View>
+          )}
+          {type === ProgressIndicatorTypes.RETRY && (
+            <Image source={iconReload} style={{ height: 18, width: 18 }} />
+          )}
+        </Container>
+      </TouchableOpacity>
+    );
+  }
+}
 
-    render() {
-      const { active, children, type } = this.props;
-      if (!active) {
-        return <View>{children}</View>;
-      }
-
-      return (
-        <TouchableOpacity onPress={this.props.action}>
-          {children}
-          <Overlay />
-          <Container>
-            {type === ProgressIndicatorTypes.IN_PROGRESS && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <ActivityIndicator style={{}} color="white" />
-              </View>
-            )}
-            {type === ProgressIndicatorTypes.RETRY && (
-              <Image source={iconReload} style={{ height: 18, width: 18 }} />
-            )}
-          </Container>
-        </TouchableOpacity>
-      );
-    }
-  },
-);
+export default themed(UploadProgressIndicator);

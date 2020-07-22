@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Animated, Easing } from 'react-native';
 import styled from '@stream-io/styled-components';
-import { themed } from '../styles/theme';
+import { themed } from '../../styles/theme';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -20,43 +20,43 @@ export const Circle = styled(AnimatedView)`
  * @example ./docs/Spinner.md
  * @extends PureComponent
  */
-export const Spinner = themed(
-  class Spinner extends React.PureComponent {
-    static themePath = 'spinner';
-    state = {
-      rotateValue: new Animated.Value(0),
-    };
+class Spinner extends React.PureComponent {
+  static themePath = 'spinner';
+  state = {
+    rotateValue: new Animated.Value(0),
+  };
 
-    componentDidMount() {
-      this._start();
-    }
+  componentDidMount() {
+    this._start();
+  }
 
-    _start = () => {
-      Animated.loop(
-        Animated.timing(this.state.rotateValue, {
-          toValue: 1,
-          duration: 800,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ).start();
-    };
+  _start = () => {
+    Animated.loop(
+      Animated.timing(this.state.rotateValue, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  };
 
-    render() {
-      return (
-        <Circle
-          style={{
-            transform: [
-              {
-                rotate: this.state.rotateValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0deg', '360deg'],
-                }),
-              },
-            ],
-          }}
-        />
-      );
-    }
-  },
-);
+  render() {
+    return (
+      <Circle
+        style={{
+          transform: [
+            {
+              rotate: this.state.rotateValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['0deg', '360deg'],
+              }),
+            },
+          ],
+        }}
+      />
+    );
+  }
+}
+
+export default themed(Spinner);
