@@ -392,6 +392,7 @@ export const MessageInput = <
           attachments,
           mentioned_users: [],
           parent_id,
+          show_in_channel: true,
           text: '',
         } as unknown) as Partial<StreamMessage<At, Me, Us>>);
 
@@ -792,6 +793,7 @@ export const MessageInput = <
           attachments,
           mentioned_users: uniq(mentionedUsers),
           parent_id,
+          show_in_channel: true,
           text: prevText,
         } as unknown) as StreamMessage<At, Me, Us>);
 
