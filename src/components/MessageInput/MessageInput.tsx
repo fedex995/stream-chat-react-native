@@ -269,6 +269,10 @@ export type MessageInputProps<
    * ref for input setter function
    */
   setInputRef?: (ref: TextInput | null) => void;
+  /**
+   * thread index for thread color messages
+   */
+  threadIndex?: string;
 };
 
 /**
@@ -315,6 +319,7 @@ export const MessageInput = <
     SendButton = SendButtonDefault,
     sendImageAsync = false,
     setInputRef,
+    threadIndex,
   } = props;
 
   const {
@@ -391,6 +396,9 @@ export const MessageInput = <
         sendMessageContext(({
           attachments,
           mentioned_users: [],
+          message_custom_data: threadIndex
+            ? { thread_index: threadIndex }
+            : null,
           parent_id,
           show_in_channel: true,
           text: '',
