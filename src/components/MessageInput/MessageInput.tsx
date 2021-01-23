@@ -13,6 +13,7 @@ import {
   logChatPromiseExecution,
   SendFileAPIResponse,
   Message as StreamMessage,
+  UpdatedMessage,
   UserResponse,
 } from 'stream-chat';
 
@@ -40,7 +41,7 @@ import {
   ImageUpload,
   useMessageDetailsForState,
 } from './hooks/useMessageDetailsForState';
-import { generateRandomId } from './utils/generateRandomId';
+import { generateRandomId } from '../../utils/generateRandomId';
 
 import {
   AutoCompleteInput,
@@ -164,6 +165,10 @@ export type MessageInputProps<
    */
   AttachmentFileIcon?: React.ComponentType<FileIconProps>;
   /**
+   * Max number of suggestions to display in list. Defaults to 10.
+   */
+  autocompleteSuggestionsLimit?: number;
+  /**
    * Compress image with quality (from 0 to 1, where 1 is best quality).
    * On iOS, values larger than 0.8 don't produce a noticeable quality increase in most images,
    * while a value of 0.8 will reduce the file size by about half or less compared to a value of 1.
@@ -214,6 +219,7 @@ export type MessageInputProps<
   ImageUploadPreview?: React.ComponentType<ImageUploadPreviewProps>;
   /** Initial value to set on input */
   initialValue?: string;
+
   /**
    * Custom UI component for AutoCompleteInput.
    * Defaults to and accepts same props as: https://github.com/GetStream/stream-chat-react-native/blob/master/src/components/AutoCompleteInput/AutoCompleteInput.tsx
@@ -312,8 +318,9 @@ export const MessageInput = <
     hasImagePicker = true,
     ImageUploadPreview = ImageUploadPreviewDefault,
     initialValue,
+    autocompleteSuggestionsLimit = 10,
     Input,
-    maxNumberOfFiles,
+    maxNumberOfFiles = 10,
     onChangeText: onChangeTextProp,
     parent_id,
     SendButton = SendButtonDefault,
@@ -375,6 +382,10 @@ export const MessageInput = <
   useEffect(() => {
     if (editing && inputBoxRef.current) {
       inputBoxRef.current.focus();
+    }
+
+    if (!editing) {
+      resetInput();
     }
   }, [editing]);
 
@@ -534,14 +545,13 @@ export const MessageInput = <
   };
 
   const pickFile = async () => {
-    if (
-      (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
-      numberOfUploads > 10
-    ) {
+    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
       return;
     }
 
-    const result = await pickDocument({ maxNumberOfFiles });
+    const result = await pickDocument({
+      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
+    });
     if (!result.cancelled && result.docs) {
       result.docs.forEach((doc) => {
         const mimeType = lookup(doc.name);
@@ -556,16 +566,13 @@ export const MessageInput = <
   };
 
   const pickImage = async () => {
-    if (
-      (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) ||
-      numberOfUploads > 10
-    ) {
+    if (maxNumberOfFiles && numberOfUploads >= maxNumberOfFiles) {
       return;
     }
 
     const result = await pickImageNative({
       compressImageQuality,
-      maxNumberOfFiles,
+      maxNumberOfFiles: maxNumberOfFiles - numberOfUploads,
     });
 
     if (!result.cancelled && result.images) {
@@ -623,6 +630,7 @@ export const MessageInput = <
 
     const triggerSettings = channel
       ? ACITriggerSettings<At, Ch, Co, Ev, Me, Re, Us>({
+          autocompleteSuggestionsLimit,
           channel,
           onMentionSelectItem: onSelectItem,
           t,
@@ -710,6 +718,16 @@ export const MessageInput = <
       </Container>
     );
   };
+  const resetInput = (pendingAttachments: Attachment[] = []) => {
+    setFileUploads([]);
+    setImageUploads([]);
+    setMentionedUsers([]);
+    setNumberOfUploads(
+      (prevNumberOfUploads) =>
+        prevNumberOfUploads - (pendingAttachments?.length || 0),
+    );
+    setText('');
+  };
 
   const sendMessage = async () => {
     if (sending.current) {
@@ -743,7 +761,10 @@ export const MessageInput = <
         }
       }
 
-      if (image.state === FileState.UPLOADED) {
+      if (
+        image.state === FileState.UPLOADED ||
+        image.state === FileState.FINISHED
+      ) {
         attachments.push({
           fallback: image.file.name,
           image_url: image.url,
@@ -761,7 +782,10 @@ export const MessageInput = <
         sending.current = false;
         return;
       }
-      if (file.state === FileState.UPLOADED) {
+      if (
+        file.state === FileState.UPLOADED ||
+        file.state === FileState.FINISHED
+      ) {
         attachments.push({
           asset_url: file.url,
           file_size: file.file.size,
@@ -784,14 +808,14 @@ export const MessageInput = <
         attachments,
         mentioned_users: mentionedUsers,
         text: prevText,
-      } as StreamMessage<At, Me, Us>;
+      } as UpdatedMessage<At, Ch, Co, Me, Re, Us>;
 
       // TODO: Remove this line and show an error when submit fails
       clearEditingState();
-
       const updateMessagePromise = editMessage(updatedMessage).then(
         clearEditingState,
       );
+      resetInput(attachments);
       logChatPromiseExecution(updateMessagePromise, 'update message');
 
       sending.current = false;
@@ -806,14 +830,7 @@ export const MessageInput = <
         } as unknown) as StreamMessage<At, Me, Us>);
 
         sending.current = false;
-        setFileUploads([]);
-        setImageUploads([]);
-        setMentionedUsers([]);
-        setNumberOfUploads(
-          (prevNumberOfUploads) =>
-            prevNumberOfUploads - (attachments?.length || 0),
-        );
-        setText('');
+        resetInput(attachments);
       } catch (_error) {
         sending.current = false;
         setText(prevText);
@@ -839,10 +856,10 @@ export const MessageInput = <
         await client.updateMessage({
           ...editing,
           text,
-        } as StreamMessage<At, Me, Us>);
+        } as UpdatedMessage<At, Ch, Co, Me, Re, Us>);
       }
 
-      setText('');
+      resetInput();
       clearEditingState();
     } catch (error) {
       console.log(error);
@@ -1039,8 +1056,8 @@ export const MessageInput = <
         <IconSquare
           icon={iconClose}
           onPress={() => {
+            resetInput();
             clearEditingState();
-            setText('');
           }}
         />
       </EditingBoxHeader>

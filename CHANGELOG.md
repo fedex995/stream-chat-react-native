@@ -1,5 +1,43 @@
 # Changelog
 
+
+## [2.1.2] 2021-01-09
+
+- Fixed infinite re-rendering issue on mentions suggestion box [5fd521a](https://github.com/GetStream/stream-chat-react-native/commit/5fd521a075170004fe551dd3ffbac111256274fe)
+
+## [2.1.1] 2020-12-21
+
+- Fixed broken mentions autocomplete feature for channels with more than 100 members. #457
+- Added a new prop autocompleteSuggestionsLimit on MessageInput - Max number of suggestions to display in list. Defaults to 10.
+
+## [2.1.0] 2020-12-07
+
+### Dependency changes
+- Bumping dependency to stream-chat@2.9.0
+
+### Fixes
+- Fixed plenty of issues around reload/refresh of channellist upon failures.
+- Fixing retry message functionality [7a423f7](https://github.com/GetStream/stream-chat-react-native/commit/7a423f7c059336f770fd107ff8cc6f2bd6e4a939)
+
+### New Props:
+- MessageList component
+  - MessageNotification [5b5c2ac](https://github.com/GetStream/stream-chat-react-native/commit/5b5c2ac1a021018834696b57c4dfb030635c9cb8)
+  - onListScroll [5b5c2ac](https://github.com/GetStream/stream-chat-react-native/commit/5b5c2ac1a021018834696b57c4dfb030635c9cb8)
+  - FooterComponent [d803bab](https://github.com/GetStream/stream-chat-react-native/commit/d803bab3d25a4e34bb8192e06fd41db5bfd07ea7)
+  - inverted [d803bab](https://github.com/GetStream/stream-chat-react-native/commit/d803bab3d25a4e34bb8192e06fd41db5bfd07ea7)
+  - NetworkDownIndicator [e09b9fc](https://github.com/GetStream/stream-chat-react-native/commit/e09b9fc93fb5064efe16b1c6c7572116d8f2ee69)
+
+## [2.0.2] 2020-11-16
+
+- Fixing issue - when you cancel 'edit message' flow, input box attachments don't get cleared [425db22](https://github.com/GetStream/stream-chat-react-native/commit/425db22cc1ad51be651e61e64af92128763f51ca)
+
+- Adding reload behaviour on error indicator on messagelist [6047671](https://github.com/GetStream/stream-chat-react-native/commit/604767192daeb1c621b3763d4a56be95688bff12)
+
+## [2.0.1] 2020-11-16
+
+- Fixed issue - When you edit a message which has image attachments, images disappear from message - [68c0acb](https://github.com/GetStream/stream-chat-react-native/commit/68c0acbbb66e2f116db84be503054c8d2046778f)
+- Fixed maxFiles value on image picker and file picker taking into account already selected number of attachments - [176f675](https://github.com/GetStream/stream-chat-react-native/commit/176f6751d2240cd502d1d84b91fa07b849c943ea)
+
 ## [2.0.0] 2020-10-29
 
 Please check [Upgrade Docs](https://github.com/GetStream/stream-chat-react-native/wiki/Upgrade-helper#upgrade-from-0xx-to-2xx) for upgrading from 0.x.x to 2.x.x

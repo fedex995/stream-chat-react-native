@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   DateSeparatorProps,
   DateSeparator as DefaultDateSeparator,
 } from './DateSeparator';
-import { MessageNotification } from './MessageNotification';
+import {
+  MessageNotification as DefaultMessageNotification,
+  MessageNotificationProps,
+} from './MessageNotification';
 import {
   MessageSystem as DefaultMessageSystem,
   MessageSystemProps,
@@ -39,7 +41,6 @@ import {
   ThreadContextValue,
   useThreadContext,
 } from '../../contexts/threadContext/ThreadContext';
-import { useTranslationContext } from '../../contexts/translationContext/TranslationContext';
 import { styled } from '../../styles/styledComponents';
 
 import type { UserResponse } from 'stream-chat';
@@ -58,20 +59,8 @@ import type {
   UnknownType,
 } from '../../types/types';
 
-const ErrorNotification = styled.View`
-  align-items: center;
-  background-color: #fae6e8;
-  color: red;
-  padding: 5px;
-  z-index: 10;
-  ${({ theme }) => theme.messageList.errorNotification.css}
-`;
-
-const ErrorNotificationText = styled.Text`
-  background-color: #fae6e8;
-  color: red;
-  ${({ theme }) => theme.messageList.errorNotificationText.css}
-`;
+import { NetworkDownIndicator as DefaultNetworkDownIndicator } from './NetworkDownIndicator';
+import { generateRandomId } from '../../utils/generateRandomId';
 
 const ListContainer = (styled(FlatList)`
   flex: 1;
@@ -98,13 +87,13 @@ const keyExtractor = <
         ? typeof item.created_at === 'string'
           ? item.created_at
           : item.created_at.toISOString()
-        : uuidv4())
+        : generateRandomId())
     );
   }
   if (item.date && typeof item.date !== 'string') {
     return item.date.toISOString();
   }
-  return uuidv4();
+  return generateRandomId();
 };
 
 export type MessageListProps<
@@ -160,7 +149,10 @@ export type MessageListProps<
    * used in MessageList. Its footer instead of header, since message list is inverted.
    *
    */
+  FooterComponent?: React.ReactElement;
   HeaderComponent?: React.ReactElement;
+  /** Whether or not the FlatList is inverted. Defaults to true */
+  inverted?: boolean;
   /**
    * Custom UI component to display a message in MessageList component
    * Default component (accepts the same props): [MessageSimple](https://getstream.github.io/stream-chat-react-native/#messagesimple)
@@ -171,6 +163,7 @@ export type MessageListProps<
    * If all the actions need to be disabled, empty array or false should be provided as value of prop.
    */
   messageActions?: boolean | string[];
+  MessageNotification?: React.ComponentType<MessageNotificationProps>;
   /**
    * Custom UI component to display a system message
    * Default component (accepts the same props): [MessageSystem](https://getstream.github.io/stream-chat-react-native/#messagesystem)
@@ -178,8 +171,15 @@ export type MessageListProps<
   MessageSystem?: React.ComponentType<
     MessageSystemProps<At, Ch, Co, Ev, Me, Re, Us>
   >;
+  /**
+   * Custom UI component to render network down indicator
+   *
+   * Defaults to and accepts same props as: [NetworkDownIndicator](https://getstream.github.io/stream-chat-react-native/#NetworkDownIndicator)
+   */
+  NetworkDownIndicator?: React.ComponentType;
   /** Turn off grouping of messages by user */
   noGroupByUser?: boolean;
+  onListScroll?: ScrollViewProps['onScroll'];
   /**
    * Handler to open the thread on message. This is callback for touch event for replies button.
    *
@@ -241,14 +241,19 @@ export const MessageList = <
     DateSeparator = DefaultDateSeparator,
     disableWhileEditing = true,
     dismissKeyboardOnMessageTouch = true,
+    FooterComponent,
     HeaderComponent,
+    inverted = true,
     Message: MessageFromProps,
+    MessageNotification = DefaultMessageNotification,
     MessageSystem = DefaultMessageSystem,
     messageActions,
     noGroupByUser,
+    onListScroll,
     onThreadSelect,
     setFlatListRef,
     threadList,
+    NetworkDownIndicator = DefaultNetworkDownIndicator,
     TypingIndicator = DefaultTypingIndicator,
   } = props;
 
@@ -268,9 +273,9 @@ export const MessageList = <
     Message: MessageFromContext,
   } = useMessagesContext<At, Ch, Co, Ev, Me, Re, Us>();
   const { loadMoreThread } = useThreadContext<At, Ch, Co, Ev, Me, Re, Us>();
-  const { t } = useTranslationContext();
 
   const messageList = useMessageList<At, Ch, Co, Ev, Me, Re, Us>({
+    inverted,
     noGroupByUser,
     threadList,
   });
@@ -375,6 +380,9 @@ export const MessageList = <
     if (removeNewMessageNotification) {
       setNewMessageNotification(false);
     }
+    if (onListScroll) {
+      onListScroll(event);
+    }
   };
 
   const goToNewMessages = () => {
@@ -407,10 +415,11 @@ export const MessageList = <
           data={messageList}
           /** Disables the MessageList UI. Which means, message actions, reactions won't work. */
           extraData={disabled}
-          inverted
+          inverted={inverted}
           keyboardShouldPersistTaps='always'
           keyExtractor={keyExtractor}
-          ListFooterComponent={HeaderComponent}
+          ListFooterComponent={FooterComponent}
+          ListHeaderComponent={HeaderComponent}
           maintainVisibleContentPosition={{
             autoscrollToTopThreshold: 10,
             minIndexForVisible: 1,
@@ -438,13 +447,7 @@ export const MessageList = <
             showNotification={newMessagesNotification}
           />
         )}
-        {!isOnline && (
-          <ErrorNotification testID='error-notification'>
-            <ErrorNotificationText>
-              {t('Connection failure, reconnecting now ...')}
-            </ErrorNotificationText>
-          </ErrorNotification>
-        )}
+        {!isOnline && <NetworkDownIndicator />}
       </View>
       {
         // Mask for edit state
